@@ -1,50 +1,40 @@
 #!/usr/bin/env ruby
-require "yaml"
-require "pp"
- 
-class SrvrNfo
-  attr_accessor :root, :prefix
-  def initialize(root, prefix)
-    @root   = root
-    @prefix = prefix
-  end  
-end
+require "#{File.dirname(__FILE__)}/main"
 
-home = `echo $HOME`.chomp
-if File.exists?("#{home}/mirror_root.yaml")
-  puts "from Home Dir"
-  srvrnfo = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }
-elsif File.exists?("mirror_root.yaml")
-  puts "from Local Dir"
-  srvrnfo = File.open("mirror_root.yaml") { |file| YAML.load(file) }
-end
+def build_rsync_cmd
+  curdir       = `pwd`.chomp
+  home         = `echo $HOME`.chomp
+  abs_path_arr = curdir.split('/')
+  abs_path_arr.shift
 
-# unless File.exists?("mirror_root.yaml")
-#   $stderr.puts "Please create mirror_root.yaml"
-#   $stderr.puts "Define it as:"
-#   exit
-# end
+  main = Main.new(curdir, home)
+  return false unless main.find_root_dir(abs_path_arr)
 
+  puts "remote starting directory is: #{main.srvrnfo.prefix}"
 
-
-curdir = `pwd`.chomp
-arr = curdir.split('/')
-arr.shift
-
-narr = []
-hit = false
-arr.each_index do |i|
-  if hit
-    narr << arr[i]
+  rel_path_arr = []
+  hit = false
+  abs_path_arr.each_index do |i|
+    if hit
+      rel_path_arr << abs_path_arr[i]
+    end
+    if abs_path_arr[i] == "#{main.srvrnfo.root}"
+      hit = true
+      rel_path_arr << abs_path_arr[i]
+      puts "found #{abs_path_arr[i]}"
+    end
   end
-  if arr[i] == "#{srvrnfo.root}"
-    hit = true
-    narr << arr[i]
-    puts "found #{arr[i]}"
-  end
+
+  rel_path = rel_path_arr.join('/')
+  # puts "copied to edvelez@master.licef.ca:#{rel_path}"
+  # puts `scp #{file} edvelez@master.licef.ca:#{rel_path}`
+  puts `rsync -avz --exclude '.svn' --exclude '.DS_Store' #{curdir}/* edvelez@master.licef.ca:#{main.srvrnfo.prefix}/#{rel_path}`
+  return true
 end
 
-rel_path = narr.join('/')
-# puts "copied to edvelez@master.licef.ca:#{rel_path}"
-# puts `scp #{file} edvelez@master.licef.ca:#{rel_path}`
-puts `rsync -avz --exclude '.svn' --exclude '.DS_Store' #{curdir}/* edvelez@master.licef.ca:#{srvrnfo.prefix}/#{rel_path}`
+if build_rsync_cmd
+  puts "Completed Successfully"
+else
+  $stderr.puts "Failed"
+end
+
