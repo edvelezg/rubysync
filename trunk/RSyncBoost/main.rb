@@ -3,23 +3,29 @@ require "pp"
 require "#{File.dirname(__FILE__)}/SrvrNfo"
 
 class Main
-  attr_accessor :srvrnfo, :rel_path
+  attr_accessor :srvrnfo
+  
+  def self.create_mirror_root
+    options = SrvrNfo.create
+    File.open("mirror_root.yaml", "w") { |file| YAML.dump(options, file) }
+  end
 
   def initialize(curdir, home)
-    @rel_path = ""
     find_mirror_root(curdir, home)
   end
   
   def find_mirror_root(curdir, home)
+    options = {}
     if file_usable?("#{home}/mirror_root.yaml")
-      @srvrnfo = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}"
+      options = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}"
     elsif file_usable?("mirror_root.yaml")
-      @srvrnfo = File.open("mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{curdir}"
+      options = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}"
     else
       $stderr.puts "Create or modify a mirror_root.yaml file.\n"
       exit!
     end
-  end
+    @srvrnfo = SrvrNfo.new(options)
+  end  
 
   def file_usable?(filepath)
     return false unless filepath
