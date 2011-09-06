@@ -4,18 +4,25 @@ require "pathname"
 require "yaml"
 require "#{File.dirname(__FILE__)}/main"
 
+def find_rel_path
+  cwd     = Pathname.pwd
+  cwd_arr = cwd.to_s.split("/")
+  home    = Pathname.new(`echo $HOME`.chomp)
 
-cwd  = Pathname.pwd
-home = Pathname.new(`echo $HOME`.chomp)
+  main    = Main.new(cwd.to_s, home.to_s)
+  return false unless main.find_root_dir(cwd_arr)
 
-main    = Main.new(cwd.to_s, home.to_s)
-prefix  = Pathname.new(main.srvrnfo.prefix)
-cwd_arr = cwd.to_s.split("/")
-idx     = cwd_arr.index(main.srvrnfo.root)
-rt_path = Pathname.new(cwd_arr[0...idx].join("/"))
+  prefix  = Pathname.new(main.srvrnfo.prefix)
+  idx     = cwd_arr.index(main.srvrnfo.root)
+  rt_path = Pathname.new(cwd_arr[0...idx].join("/"))
 
-puts prefix.join(cwd.relative_path_from(rt_path))
+  puts prefix.join(cwd.relative_path_from(rt_path))
+  return true
+end
 
+unless find_rel_path
+  $stderr.puts "No relative path to server"
+end
 # loc = File.dirname(__FILE__)
 # rel_folder = `#{loc}/FindMirror/findMirrorDir.rb`.chomp
 # 
