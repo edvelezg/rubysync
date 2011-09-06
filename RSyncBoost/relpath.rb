@@ -23,6 +23,7 @@ end
 unless find_rel_path
   $stderr.puts "No relative path to server"
 end
+
 # loc = File.dirname(__FILE__)
 # rel_folder = `#{loc}/FindMirror/findMirrorDir.rb`.chomp
 # 
