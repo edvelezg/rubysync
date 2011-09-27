@@ -4,12 +4,12 @@ require "pathname"
 require "yaml"
 require "#{File.dirname(__FILE__)}/main"
 
-def find_rel_path
+def find_rel_path(quiet)
   cwd     = Pathname.pwd
   cwd_arr = cwd.to_s.split("/")
   home    = Pathname.new(`echo $HOME`.chomp)
 
-  main    = Main.new(cwd.to_s, home.to_s)
+  main    = Main.new(cwd.to_s, home.to_s, quiet)
   return false unless main.find_root_dir(cwd_arr)
 
   prefix  = Pathname.new(main.srvrnfo.prefix)
@@ -20,7 +20,8 @@ def find_rel_path
   return true
 end
 
-unless find_rel_path
+quiet = ARGV[0].to_i || "0"
+unless find_rel_path(quiet.to_i)
   $stderr.puts "No relative path to server"
 end
 
