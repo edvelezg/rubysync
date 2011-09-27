@@ -2,7 +2,7 @@
 require "#{File.dirname(__FILE__)}/main"
 
 def build_rsync_cmd
-  curdir       = `pwd`.chomp
+  curdir       = `pwd -P`.chomp
   home         = `echo $HOME`.chomp
   abs_path_arr = curdir.split('/')
   abs_path_arr.shift

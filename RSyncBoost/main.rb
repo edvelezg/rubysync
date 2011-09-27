@@ -10,16 +10,16 @@ class Main
     File.open("mirror_root.yaml", "w") { |file| YAML.dump(options, file) }
   end
 
-  def initialize(curdir, home)
-    find_mirror_root(curdir, home)
+  def initialize(curdir, home, quiet=0)
+    find_mirror_root(curdir, home, quiet)
   end
   
-  def find_mirror_root(curdir, home)
+  def find_mirror_root(curdir, home, quiet)
     options = {}
     if file_usable?("#{home}/mirror_root.yaml")
-      options = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}"
+      options = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}" unless quiet == 1
     elsif file_usable?("mirror_root.yaml")
-      options = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}"
+      options = File.open("#{home}/mirror_root.yaml") { |file| YAML.load(file) }; puts "loading mirror_root.yaml in #{home}" unless quiet == 1
     else
       $stderr.puts "Create or modify a mirror_root.yaml file.\n"
       exit!
